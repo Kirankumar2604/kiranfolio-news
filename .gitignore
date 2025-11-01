@@ -1,1 +1,37 @@
-node_modules
+# Node modules
+node_modules/
+
+# Env files (do NOT commit secrets). Re-include .env.example if you have one.
+.env
+.env.*
+!.env.example
+
+# Client Vite env files
+/client/.env*
+
+# Build outputs
+dist/
+build/
+.vite/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+
+# Misc caches
+.parcel-cache/
+.cache/
+
+# SQLite DB files
+*.sqlite
