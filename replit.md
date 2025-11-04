@@ -10,7 +10,22 @@ Kiranfolio is a modern, professional tech news aggregation website that provides
 - Provide powerful search functionality for finding specific topics
 - Ensure responsive design across all devices with flawless UX
 
-## Recent Changes (November 1, 2025)
+## Recent Changes
+
+### November 4, 2025 - Security Hardening & Replit Setup
+- **Security Improvements**: Moved all API integrations to backend for production security
+  - Created secure `/api/ai` backend endpoint for Gemini AI integration
+  - Removed all frontend API key exposure (VITE_GEMINI_API_KEY)
+  - All API keys (NEWS_API_KEY, GEMINI_API_KEY) now managed server-side only
+  - Frontend now calls backend endpoints exclusively - no direct external API calls
+  - Implemented proper error handling and validation for all backend endpoints
+- **Replit Environment Setup**:
+  - Configured server to run on port 5000 with 0.0.0.0 binding for Replit webview
+  - Set up workflow for development server
+  - Configured Replit Secrets for secure API key management
+  - Updated deployment configuration for Replit publishing
+
+### November 1, 2025 - Initial MVP Launch
 - **Initial MVP Launch**: Built complete news aggregation platform from scratch
   - Implemented schema-first architecture with TypeScript types shared between frontend and backend
   - Created stunning hero section with featured articles and overlay gradients
@@ -106,19 +121,36 @@ Users can filter news by major tech companies:
 - Optimized image loading with fallbacks
 - TanStack Query for efficient data fetching and caching
 
-### API Integration
+### API Integration & Security
 
-#### News API Configuration
-- **Endpoint**: `GET /api/news`
+#### Security Architecture
+**All API integrations are server-side only for production security:**
+- ✅ All API keys stored in environment variables (Replit Secrets)
+- ✅ Frontend never has direct access to any API keys
+- ✅ All external API calls proxied through secure backend endpoints
+- ✅ Proper error handling and validation on all endpoints
+- ✅ Rate limiting handled at the backend level
+
+#### Backend API Endpoints
+
+**News API** - `GET /api/news`
 - **Query Parameters**:
   - `category`: TechCategory enum (all, google, apple, microsoft, etc.)
   - `q`: Optional search query string
 - **Caching**: 5-minute in-memory cache per category/query combination
 - **Response**: NewsResponse with articles array
-- **Error Handling**: Rate limiting, API errors, network failures
+- **Error Handling**: Rate limiting (429), invalid API key (401), network failures (500)
+
+**AI Assistant** - `POST /api/ai`
+- **Request Body**: `{ query: string }`
+- **Purpose**: Secure proxy for Gemini AI tech news assistant
+- **Response**: `{ response: string }` with AI-generated answer
+- **Error Handling**: Missing API key (503), invalid query (400), rate limiting (429)
+- **Security**: API key never exposed to frontend, all requests validated
 
 #### Environment Variables
-- `NEWS_API_KEY`: API key for newsapi.org (required)
+- `NEWS_API_KEY`: API key for newsapi.org (required for news features)
+- `GEMINI_API_KEY`: API key for Google Gemini (optional, enables AI assistant)
 - `SESSION_SECRET`: Session secret for Express (optional)
 
 ### Design System
