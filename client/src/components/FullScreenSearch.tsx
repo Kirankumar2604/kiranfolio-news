@@ -7,18 +7,8 @@ import { type NewsResponse, type NewsArticle } from "@shared/schema";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-// Pull Gemini API configuration from Vite environment variables.
-// NOTE: Exposing private API keys in client-side code is insecure. Prefer proxying
-// requests through the server for any secret keys. These env vars are used here
-// for development convenience only.
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY ?? "";
-const GEMINI_API_URL = import.meta.env.VITE_GEMINI_API_URL ??
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
-
-if (!GEMINI_API_KEY) {
-  // eslint-disable-next-line no-console
-  console.warn("VITE_GEMINI_API_KEY is not set. AI requests will fail and exposing keys in client is insecure.");
-}
+// AI requests are now securely proxied through the backend API
+// This ensures API keys are never exposed to the client
 
 interface FullScreenSearchProps {
   isOpen: boolean;
@@ -160,44 +150,33 @@ export function FullScreenSearch({ isOpen, onClose, initialQuery = "", onSearch 
     setAiResponse("");
 
     try {
-      // Add context to make AI focus on news and tech
-      const contextualPrompt = `You are a tech news assistant. Only answer questions related to technology, news, tech companies, innovations, or current events. 
-If the question is not related to news or technology (like booking tickets, cooking recipes, etc.), politely respond: "I'm a tech news assistant. I can only help with technology and news-related questions. Please ask something about tech news, companies, or innovations."
-
-User question: ${searchQuery}`;
-
-      const response = await fetch(GEMINI_API_URL, {
+      // Call the secure backend API endpoint
+      const response = await fetch("/api/ai", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: contextualPrompt,
-                },
-              ],
-            },
-          ],
+          query: searchQuery,
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
       }
 
       const data = await response.json();
       
-      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-        setAiResponse(data.candidates[0].content.parts[0].text);
+      if (data.response) {
+        setAiResponse(data.response);
       } else {
-        throw new Error("Invalid response format from API");
+        throw new Error("Invalid response format from server");
       }
     } catch (error) {
       console.error("AI request failed:", error);
-      setAiError("Sorry, AI couldn't answer your question. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Sorry, AI couldn't answer your question. Please try again.";
+      setAiError(errorMessage);
     } finally {
       setIsAiLoading(false);
     }
