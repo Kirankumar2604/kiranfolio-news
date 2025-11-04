@@ -1,0 +1,11 @@
+{
+    "author": "Jeffrey Zhao <jeffz@live.com> (http://zhaojie.me/)",
+    "homepage": "https://github.com/JeffreyZhao/water",
+    "bugs": {
+        "url": "https://github.com/JeffreyZhao/water/issues",
+        "email": "jeffz@live.com"
+    },
+    "name": "water",
+    "version": "0.0.1",
+    "main": "water.js"
+}
